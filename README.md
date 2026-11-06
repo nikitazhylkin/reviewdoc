@@ -12,6 +12,17 @@ AI agents write plans, specs, and audits as markdown files. Perfect in the termi
 
 The markdown stays your source of truth. The HTML is the human-facing review layer.
 
+## Requirements
+
+Python 3.10 or newer and one package, `markdown-it-py` (listed in `requirements.txt`). Fonts are bundled. Opening the result in a browser works on any OS; on macOS it tries a new window in your default browser.
+
+## How it works
+
+1. `build.py` reads your markdown file and splits it on `##` headings. Text before the first `##` becomes the cover lead.
+2. Each `##` section is rendered with markdown-it-py (CommonMark plus tables) into a card with Approve and Rework buttons and a note field. A section map at the top links to every card.
+3. The fonts are embedded as base64 and the page script is inline, so the output is one `.html` file with no network needs.
+4. In the browser, your marks and notes are saved in `localStorage`, keyed to that document. **Copy feedback** turns them into one text block you paste back to the author.
+
 ## Install
 
 ```bash
@@ -26,6 +37,8 @@ pip install -r requirements.txt        # one dependency: markdown-it-py. Python 
 python3 build.py examples/sample-plan.md          # renders + opens sample-plan.html
 python3 build.py my-plan.md -o review.html --no-open
 ```
+
+Options: `-o <path>` sets the output file (default: next to the source, with `.html`). `--no-open` skips opening the browser. Set `$REVIEWDOC_BROWSER` to choose which browser opens.
 
 The output is one self-contained `.html` (fonts embedded, works offline). AirDrop it or send it as a file; it opens on a phone.
 
@@ -53,9 +66,11 @@ Each section has Approve / Rework plus a note (saved per-device in `localStorage
 
 ```
 Review: <title> · <reviewer>
-§2 Build   rework — "split into 2a/2b"
-§4 QA      approve
+§2 Build   ✗ rework — "split into 2a/2b"
+§4 QA      ✓ approve
 ```
+
+The reviewer name comes from the name field on the page. Sections with no mark and no note are left out of the block.
 
 Paste it back to your agent; it revises the exact sections named.
 
@@ -70,6 +85,7 @@ Instrument Sans and Inter are bundled under the SIL Open Font License 1.1 (see [
 ## Tests
 
 ```bash
+pip install pytest
 python3 -m pytest tests/ -q
 ```
 
